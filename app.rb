@@ -2,11 +2,13 @@ require 'sinatra'
 require 'json'
 
 get '/' do
-  "Hello from Sinatra on Heroku!"
+  return "Hello from Sinatra on Heroku!"
 end
 
 
-get '/forecast' do
-  content_type :json
-  { song: "Wake me Up" }.to_json
+post '/forecast' do
+  content_type(:json)
+  payload = JSON.parse(request.body.read).symbolize_keys
+
+  return Prophet.forecast(payload[:data], payload[:options]).to_json
 end
