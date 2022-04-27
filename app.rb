@@ -9,7 +9,7 @@ end
 
 post '/forecast' do
   content_type(:json)
-  payload = JSON.parse(request.body.read, symbolize_names: true)
+  payload = JSON.parse(request.body.read)
 
-  return Prophet.forecast(payload[:data], count: payload[:count].to_i).to_json
+  return Prophet.forecast(payload['data'], count: payload['count'].to_i).to_json
 end
