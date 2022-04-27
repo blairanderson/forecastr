@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'json'
+require 'prophet'
 
 get '/' do
   return "Hello from Sinatra on Heroku!"
