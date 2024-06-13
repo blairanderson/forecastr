@@ -1,4 +1,6 @@
 source 'https://rubygems.org'
 gem 'sinatra'
-gem 'puma'
+gem 'pry'
+# gem 'erb'
+# gem 'puma'
 gem 'prophet-rb'

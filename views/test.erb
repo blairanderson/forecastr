@@ -1,0 +1,16 @@
+<script src="https://unpkg.com/chart.js@4.2.0/dist/chart.umd.js"></script>
+<script src="https://unpkg.com/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.js"></script>
+<script src="https://unpkg.com/chartkick@5.0.1/dist/chartkick.js"></script>
+
+
+<div id="chart" style="height: 300px;"></div>
+
+<script>
+  const series = <%= JSON.generate(series) %>
+  const forecast = <%= forecast %>
+  const data = [
+      {name: "Series", data: series },
+      {name: "Forecast", data: forecast}
+  ]
+    new Chartkick.LineChart("chart", data)
+</script>

@@ -1,69 +1,41 @@
 require 'sinatra'
+require 'erb'
 require 'json'
 require 'prophet'
 require 'date'
+require 'pry'
 
 get '/' do
-  docs = <<-HEREDOC
-// first get a series of data that you want to forecast
-series = Orders.group_by_day(:created_at).sum("quantity_shipped")
-// it should look like
-// series = {
-//   Date.parse("2020-01-01") => 100,
-//   Date.parse("2020-01-02") => 150,
-//   Date.parse("2020-01-03") => 100,
-//   Date.parse("2020-01-04") => 136,
-//   Date.parse("2020-01-05") => 138,
-//   Date.parse("2020-01-06") => 139,
-//   Date.parse("2020-01-07") => 150,
-//   Date.parse("2020-01-08") => 166,
-//   Date.parse("2020-01-09") => 176,
-//   Date.parse("2020-01-10") => 186,
-//   Date.parse("2020-01-11") => 199,
-// }
-
-// Then POST it.
-uri = URI("https://forecast.shipmentbot.com/forecast")
-http = Net::HTTP.new(uri.host, uri.port)
-http.use_ssl = true
-request = Net::HTTP::Post.new(uri.path, {'Content-Type' => 'application/json'})
-request.body = {
-    'data' => data.as_json,
-    'count' => 100
-}.to_json
-response = http.request(request).body
-HEREDOC
-
-return erb("
-<!doctype html>
-<html>
-<head>
-<meta charset='utf-8'>
-<title>ShipmentBot Forecasting</title>
-<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3' crossorigin='anonymous'>
-</head>
-<body>
-<main class='container'>
-  <h1>Hello from ShipmentBot Forecasting!</h1>
-  <p>Try this Code:</p>
-  <pre>
-  <code>
-  #{docs}
-  </code>
-  </pre>
-</main>
-</body>
-</html>")
+  erb(:index, layout: :layout)
 end
 
+post '/test' do
+  strptime = params[:strptime] || '%m/%d/%Y'
+  count = params[:count].to_i || 10
+  data = params[:series].split("\n")
+  data.map! { |row| row.split("\t").map(&:strip) }
+  series = {}
+  data.each do |row|
+    next if row[0].nil? || row[1].nil?
+    date = Date.strptime(row[0], strptime)
+    series[date] = row[1].delete(",$").to_f
+  end
+
+  min_date = series.keys.min
+  max_date = series.keys.max
+  (min_date..max_date).each do |date|
+    series[date] ||= 0.0
+  end
+
+  forecast = Prophet.forecast(series, count: count).to_json
+  erb(:test, locals: { series: series.transform_keys(&:to_s), forecast: forecast })
+end
 
 post '/forecast' do
   content_type(:json)
   payload = JSON.parse(request.body.read)
 
-  data = payload['data'].transform_keys do |key|
-    Date.parse(key)
-  end
+  series = payload['data'].transform_keys { |key| Date.parse(key) }
 
-  return Prophet.forecast(data, count: payload['count'].to_i).to_json
+  return Prophet.forecast(series, count: payload['count'].to_i || 10).to_json
 end
