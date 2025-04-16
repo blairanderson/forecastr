@@ -2,13 +2,34 @@
 
 Get a series of data that you want to forecast
 
+```bash
+curl -X POST https://forecast.shipmentbot.com/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user": {
+      "email_address": "your_email@gmail.com",
+      "password": "password",
+      "password_confirmation": "password"
+    }
+  }'
+```
+
+## Check your Email and get your token
+
+```ruby
+token = yourtoken
+```
+
+### Get your data
+
 ```ruby
 series = Orders.group_by_day(:created_at).sum("quantity_shipped")
 ```
 
-It should look like `{date1 => value, date2 => value...}`
+### POST data to the forecast endpoint
 
 ```ruby
+# It should look like `{date1 => value, date2 => value...}`
 series = {
   Date.parse("2020-01-01") => 100,
   Date.parse("2020-01-02") => 150,
@@ -22,17 +43,14 @@ series = {
   Date.parse("2020-01-10") => 186,
   Date.parse("2020-01-11") => 199,
 }
-```
 
-Then POST it to the forecastr endpoint
-
-```ruby
-uri = URI("https://forecast.shipmentbot.com/forecast")
+token = "your_token_98120f82df60414f2a94ed"
+uri = URI("https://forecast.shipmentbot.com/forecasts")
 http = Net::HTTP.new(uri.host, uri.port)
 http.use_ssl = true
-request = Net::HTTP::Post.new(uri.path, {'Content-Type' => 'application/json'})
+request = Net::HTTP::Post.new(uri.path, {'Content-Type' => 'application/json', 'X-API-Key' => token})
 request.body = {
-    'data' => data.as_json,
+    'data' => series.as_json,
     'count' => 100
 }.to_json
 response = http.request(request).body
@@ -51,7 +69,7 @@ response = http.request(request).body
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/forecastr.git
+git clone https://github.com/blairanderson/forecastr.git
 cd forecastr
 ```
 
@@ -138,27 +156,20 @@ Response:
 
 ```json
 {
-  "forecast": {
-    "predictions": {
-      "2024-04-15": 1850,
-      "2024-04-22": 1920,
-      "2024-04-29": 1980,
-      "2024-05-06": 2050,
-      "2024-05-13": 2120,
-      "2024-05-20": 2180,
-      "2024-05-27": 2250,
-      "2024-06-03": 2320
-    },
-    "confidence_intervals": {
-      "2024-04-15": [1750, 1950],
-      "2024-04-22": [1820, 2020],
-      "2024-04-29": [1880, 2080],
-      "2024-05-06": [1950, 2150],
-      "2024-05-13": [2020, 2220],
-      "2024-05-20": [2080, 2280],
-      "2024-05-27": [2150, 2350],
-      "2024-06-03": [2220, 2420]
-    }
+  "result": {
+    "2024-04-15": 1850,
+    "2024-04-22": 1920,
+    "2024-04-29": 1980,
+    "2024-05-06": 2050,
+    "2024-05-13": 2120,
+    "2024-05-20": 2180,
+    "2024-05-27": 2250,
+    "2024-06-03": 2320
+  }
+"result_info": {
+    "count": 100,
+    "forecasted_at": "2024-04-01T00:00:00Z",
+    "forecasted_period": 7
   }
 }
 ```
@@ -168,10 +179,6 @@ Response:
 ```bash
 # Get current API key
 curl -X GET http://localhost:3000/api_key \
-  -H "X-API-Key: your-api-key"
-
-# Regenerate API key
-curl -X PATCH http://localhost:3000/api_key \
   -H "X-API-Key: your-api-key"
 ```
 
