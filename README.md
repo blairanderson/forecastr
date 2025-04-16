@@ -1,6 +1,42 @@
 # Forecastr API
 
-A Rails API application for generating forecasts using Prophet.
+Get a series of data that you want to forecast
+
+```ruby
+series = Orders.group_by_day(:created_at).sum("quantity_shipped")
+```
+
+It should look like `{date1 => value, date2 => value...}`
+
+```ruby
+series = {
+  Date.parse("2020-01-01") => 100,
+  Date.parse("2020-01-02") => 150,
+  Date.parse("2020-01-03") => 100,
+  Date.parse("2020-01-04") => 136,
+  Date.parse("2020-01-05") => 138,
+  Date.parse("2020-01-06") => 139,
+  Date.parse("2020-01-07") => 150,
+  Date.parse("2020-01-08") => 166,
+  Date.parse("2020-01-09") => 176,
+  Date.parse("2020-01-10") => 186,
+  Date.parse("2020-01-11") => 199,
+}
+```
+
+Then POST it to the forecastr endpoint
+
+```ruby
+uri = URI("https://forecast.shipmentbot.com/forecast")
+http = Net::HTTP.new(uri.host, uri.port)
+http.use_ssl = true
+request = Net::HTTP::Post.new(uri.path, {'Content-Type' => 'application/json'})
+request.body = {
+    'data' => data.as_json,
+    'count' => 100
+}.to_json
+response = http.request(request).body
+```
 
 ## Development Setup
 
