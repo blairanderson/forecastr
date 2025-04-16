@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# CURSOR RULE: Rails API and Migration Generation
+
+1. Rails API Convention:
+   - Always generate new Rails applications in API mode (e.g., using `rails new app_name --api`).
+   - Ensure controllers derive from ActionController::API to maintain lightweight, API-only functionality.
+
+2. Migration File Generation:
+   - Never hard-code migration files.
+   - Use Rails generator commands (e.g., `rails generate migration MigrationName`) to create migration files.
+   - Allow Rails generators to manage timestamps, versioning, and proper structure within migrations.
+
+3. Consistency & Best Practices:
+   - Adhere to Rails conventions to maintain clarity and consistency across the codebase.
+   - Regularly review generated code for adherence to API patterns and migration standards.
