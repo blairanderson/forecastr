@@ -339,7 +339,7 @@ DEPENDENCIES
   brakeman
   debug
   kamal
-  prophet-rb
+  prophet-rb (~> 0.6.0)
   puma (>= 5.0)
   rails (~> 8.0.1)
   rubocop-rails-omakase
